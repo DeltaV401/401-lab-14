@@ -38,11 +38,11 @@ authRouter.post('/key', auth(), (req,res,next) => {
   res.status(200).send(key);
 });
 
-authRouter.get('/public-stuff', auth(), (req,res,next) => {
+authRouter.get('/public-stuff', (req,res,next) => {
   res.sendStatus(200);
 });
 
-authRouter.get('/hidden-stuff', auth('user'), (req,res,next) => {
+authRouter.get('/hidden-stuff', auth(), (req,res,next) => {
   res.sendStatus(200);
 });
 

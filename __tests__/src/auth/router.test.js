@@ -70,6 +70,27 @@ describe('Auth Router', () => {
 
 describe('New Route Tests', () => {
   it.each([
-    []
-  ]);
+    // Arrange
+    [200, '', 'get', '/public-stuff'],
+    [401, 'charles', 'get', '/public-stuff'],
+    [200, 'user', 'get', '/hidden-stuff'],
+    [401, '', 'get', '/hidden-stuff'],
+    [200, 'user', 'get', '/something-to-read'],
+    [401, 'charles', 'get', '/something-to-read'],
+    [200, 'admin', 'post', '/create-a-thing'],
+    [401, 'user', 'post', '/create-a-thing'],
+    [200, 'admin', 'put', '/update'],
+    [401, 'user', 'put', '/update'],
+    [200, 'admin', 'patch', '/jp'],
+    [401, 'user', 'patch', '/jp'],
+    [200, 'admin', 'delete', '/bye-bye'],
+    [401, 'user', 'delete', '/bye-bye'],
+    [200, 'owner', 'get', '/everything'],
+    [401, 'admin', 'get', '/everything'],
+  ])('should return %p when %s uses %p', (expectedStatus, userType, method, route) => {
+    // Act
+    return mockRequest[method](route)
+      .auth(userType)
+      .expect(expectedStatus);
+  });
 });
