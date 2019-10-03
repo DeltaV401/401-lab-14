@@ -15,14 +15,35 @@ const users = new mongoose.Schema({
   username: {type:String, required:true, unique:true},
   password: {type:String, required:true},
   email: {type: String},
-  role: {type: String, default:'user', enum: ['admin','editor','user']},
+  role: {type: String, default:'user', enum: ['admin','editor','user', 'owner']},
+}, {
+  toObject: { virtuals: true},
+  toJSON: { virtuals: true},
 });
 
-const capabilities = {
-  admin: ['create','read','update','delete'],
-  editor: ['create', 'read', 'update'],
-  user: ['read'],
-};
+users.virtual('acl', {
+  ref: 'roles',
+  localField: 'role',
+  foreignField: 'role',
+  justOne: true,
+});
+
+users.pre('findOne', function() {
+  try {
+    this.populate('acl');
+  } catch(err) {
+    console.error(err);
+  }
+});
+
+users.post('save', function() {
+  try {
+    this.populate('acl');
+    return this.execPopulate();
+  } catch(err) {
+    console.error(err);
+  }
+});
 
 users.pre('save', async function() {
   if (this.isModified('password'))
@@ -58,7 +79,7 @@ users.statics.authenticateToken = function(token) {
     (SINGLE_USE_TOKENS) && parsedToken.type !== 'key' && usedTokens.add(token);
     let query = {_id: parsedToken.id};
     return this.findOne(query);
-  } catch(e) { throw new Error('Invalid Token'); }
+  } catch(e) { return Promise.reject('Invalid Token'); }
 
 };
 
@@ -78,7 +99,7 @@ users.methods.generateToken = function(type) {
 
   let token = {
     id: this._id,
-    capabilities: capabilities[this.role],
+    capabilities: (this.acl && this.acl.capabilities) || [],
     type: type || 'user',
   };
 
@@ -91,7 +112,7 @@ users.methods.generateToken = function(type) {
 };
 
 users.methods.can = function(capability) {
-  return capabilities[this.role].includes(capability);
+  return this.acl.capabilities.includes(capability);
 };
 
 users.methods.generateKey = function() {
