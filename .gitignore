@@ -5,6 +5,7 @@ temp
 data
 .env 
 *.env
+package-lock.json
 
 ### Vim ###
 # swap
