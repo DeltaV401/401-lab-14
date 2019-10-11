@@ -33,9 +33,41 @@ authRouter.get('/oauth', (req,res,next) => {
     .catch(next);
 });
 
-authRouter.post('/key', auth, (req,res,next) => {
+authRouter.post('/key', auth(), (req,res,next) => {
   let key = req.user.generateKey();
   res.status(200).send(key);
+});
+
+authRouter.get('/public-stuff', (req,res,next) => {
+  res.sendStatus(200);
+});
+
+authRouter.get('/hidden-stuff', auth(), (req,res,next) => {
+  res.sendStatus(200);
+});
+
+authRouter.get('/something-to-read', auth('read'), (req,res,next) => {
+  res.sendStatus(200);
+});
+
+authRouter.post('/create-a-thing', auth('create'), (req,res,next) => {
+  res.sendStatus(200);
+});
+
+authRouter.put('/update', auth('update'), (req,res,next) => {
+  res.sendStatus(200);
+});
+
+authRouter.patch('/jp', auth('update'), (req,res,next) => {
+  res.sendStatus(200);
+});
+
+authRouter.delete('/bye-bye', auth('delete'), (req,res,next) => {
+  res.sendStatus(200);
+});
+
+authRouter.get('/everything', auth('superuser'), (req,res,next) => {
+  res.sendStatus(200);
 });
 
 module.exports = authRouter;
